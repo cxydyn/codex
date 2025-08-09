@@ -75,7 +75,7 @@
         
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.visible { opacity: 1; pointer-events: auto; }
-        .modal-content { padding: 1.5rem; border-radius: 0.75rem; min-width: 300px; }
+        .modal-content { padding: 1.5rem; border-radius: 0.75rem; min-width: 300px; max-width: 90%; max-height: 80%; overflow-y: auto; }
         
         .fab-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; }
         .fab-main { width: 4rem; height: 4rem; border-radius: 9999px; background-color: #856a4d; display: flex; align-items: center; justify-content: center; color: #fdf6e3; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2); cursor: pointer; transition: transform 0.3s ease, background-color 0.3s ease; }
@@ -89,6 +89,16 @@
         .todo-item label::before { content: '☐'; font-size: 1.5rem; font-family: monospace; }
         .todo-item input:checked + label::before { content: '☑'; }
         .todo-item input:checked + label span { text-decoration: line-through; opacity: 0.6; }
+
+        .flashback-link {
+            color: #856a4d;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .flashback-link:hover {
+            color: #6a523a;
+        }
     </style>
 </head>
 <body>
@@ -120,36 +130,6 @@
                 </div>
                 <div id="journal-entries-calendar" class="mt-8 space-y-6"></div>
             </section>
-
-            <!-- Entry Form Section -->
-            <section id="entry-form-section">
-                <div class="page-card p-4 md:p-6 rounded-md shadow-lg">
-                    <input type="text" id="title-input" class="w-full bg-transparent text-3xl md:text-4xl font-bold text-[#5a4a3a] outline-none mb-2 font-script" placeholder="Entry Title...">
-                    <div class="w-full h-px bg-[#dcd1b8] mb-4"></div>
-                    <textarea id="text-input" class="w-full p-2 bg-transparent text-[#4a3f35] rounded-lg focus:ring-0 focus:outline-none" rows="8" placeholder="Write your thoughts..."></textarea>
-                    <div id="media-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
-                    
-                    <!-- To-Do List Section -->
-                    <div class="mt-6 pt-4 border-t border-[#dcd1b8]">
-                        <h3 class="font-script text-2xl text-[#5a4a3a] mb-2">To-Do List</h3>
-                        <div id="todo-list" class="space-y-2"></div>
-                        <div class="flex gap-2 mt-2">
-                            <input type="text" id="todo-input" class="flex-grow bg-transparent border-b-2 border-[#dcd1b8] focus:outline-none focus:border-[#a0825f]" placeholder="New task...">
-                            <button id="add-todo-btn" class="font-script bg-[#a0825f] text-white px-3 rounded-md hover:bg-[#856a4d]">Add</button>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 pt-4 border-t border-[#dcd1b8] flex flex-wrap items-center gap-2 md:gap-4">
-                        <div class="flex gap-2 md:gap-4">
-                            <button id="image-btn" title="Add Image" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
-                            <button id="audio-btn" title="Add Audio" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg></button>
-                            <button id="video-btn" title="Add Video" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
-                            <button id="print-btn" title="Print/Download PDF" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg></button>
-                        </div>
-                        <button id="save-btn" class="w-full mt-4 md:mt-0 md:w-auto md:ml-auto">Save</button>
-                    </div>
-                </div>
-            </section>
         </main>
     </div>
     
@@ -165,12 +145,44 @@
     <div id="notification"></div>
     
     <!-- Modals -->
+    <div id="entry-modal" class="modal-overlay">
+        <div class="modal-content page-card shadow-lg w-full max-w-2xl">
+            <input type="text" id="title-input" class="w-full bg-transparent text-3xl md:text-4xl font-bold text-[#5a4a3a] outline-none mb-2 font-script" placeholder="Entry Title...">
+            <div class="w-full h-px bg-[#dcd1b8] mb-4"></div>
+            <textarea id="text-input" class="w-full p-2 bg-transparent text-[#4a3f35] rounded-lg focus:ring-0 focus:outline-none" rows="8" placeholder="Write your thoughts..."></textarea>
+            <div id="media-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+            
+            <!-- To-Do List Section -->
+            <div class="mt-6 pt-4 border-t border-[#dcd1b8]">
+                <h3 class="font-script text-2xl text-[#5a4a3a] mb-2">To-Do List</h3>
+                <div id="todo-list" class="space-y-2"></div>
+                <div class="flex gap-2 mt-2">
+                    <input type="text" id="todo-input" class="flex-grow bg-transparent border-b-2 border-[#dcd1b8] focus:outline-none focus:border-[#a0825f]" placeholder="New task...">
+                    <button id="add-todo-btn" class="font-script bg-[#a0825f] text-white px-3 rounded-md hover:bg-[#856a4d]">Add</button>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-[#dcd1b8] flex flex-wrap items-center gap-2 md:gap-4">
+                <div class="flex gap-2 md:gap-4">
+                    <button id="image-btn" title="Add Image" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
+                    <button id="audio-btn" title="Add Audio" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg></button>
+                    <button id="video-btn" title="Add Video" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
+                    <button id="link-btn" title="Insert Flashback" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></button>
+                    <button id="print-btn" title="Print/Download PDF" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg></button>
+                </div>
+                <div class="flex gap-4 mt-4">
+                    <button id="close-modal-btn" class="w-full md:w-auto py-2 px-6 rounded-lg">Close</button>
+                    <button id="save-btn" class="w-full md:w-auto">Save</button>
+                </div>
+        </div>
+    </div>
     <div id="choice-modal" class="modal-overlay"><div class="modal-content page-card"><h3 id="choice-modal-title" class="text-xl font-semibold text-[#5a4a3a] mb-4 font-script">Choose Action</h3><div class="flex justify-around gap-4"><button id="choice-modal-option1" class="flex-1 py-2 px-4 rounded-lg bg-[#856a4d] hover:bg-[#6a523a] text-white transition">Record</button><button id="choice-modal-option2" class="flex-1 py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition">Upload</button></div></div></div>
     <div id="camera-preview-modal" class="modal-overlay"><div class="modal-content page-card p-2"><video id="camera-preview-video" class="w-full max-w-lg rounded-lg" autoplay muted></video><button id="stop-recording-btn" class="w-full mt-2 py-2 px-4 rounded-lg bg-red-600 hover:bg-red-500 text-white transition">Stop Recording</button></div></div>
     <div id="camera-select-modal" class="modal-overlay"><div id="camera-select-content" class="modal-content page-card"><h3 class="text-xl font-semibold text-[#5a4a3a] mb-4 font-script">Select Camera</h3><div id="camera-options" class="flex flex-col gap-2"></div></div></div>
     <div id="image-viewer-modal" class="modal-overlay p-4 cursor-pointer">
         <img id="viewer-img" class="max-w-full max-h-full object-contain rounded-lg" src="">
     </div>
+    <div id="flashback-modal" class="modal-overlay"><div id="flashback-content" class="modal-content page-card"><h3 class="text-xl font-semibold text-[#5a4a3a] mb-4 font-script">Insert Flashback</h3><div id="flashback-options" class="flex flex-col gap-2"></div></div></div>
 
 
     <script>
@@ -200,11 +212,14 @@
         const addTodoBtn = document.getElementById('add-todo-btn');
         const saveBtn = document.getElementById('save-btn');
         const printBtn = document.getElementById('print-btn');
+        const linkBtn = document.getElementById('link-btn');
         const imageUpload = document.getElementById('image-upload');
         const audioUpload = document.getElementById('audio-upload');
         const videoUpload = document.getElementById('video-upload');
         const notification = document.getElementById('notification');
         const fabMain = document.getElementById('fab-main');
+        const entryModal = document.getElementById('entry-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
         const choiceModal = document.getElementById('choice-modal');
         const cameraPreviewModal = document.getElementById('camera-preview-modal');
         const stopRecordingBtn = document.getElementById('stop-recording-btn');
@@ -212,6 +227,8 @@
         const cameraOptionsContainer = document.getElementById('camera-options');
         const imageViewerModal = document.getElementById('image-viewer-modal');
         const viewerImg = document.getElementById('viewer-img');
+        const flashbackModal = document.getElementById('flashback-modal');
+        const flashbackOptionsContainer = document.getElementById('flashback-options');
 
         // --- DATABASE (IndexedDB) ---
         function initDB() { return new Promise((resolve, reject) => { const request = indexedDB.open(dbName, 1); request.onerror = (e) => reject("DB Error"); request.onupgradeneeded = (e) => { if (!e.target.result.objectStoreNames.contains('entries')) { e.target.result.createObjectStore('entries', { keyPath: 'id', autoIncrement: true }); } }; request.onsuccess = (e) => { db = e.target.result; resolve(db); }; }); }
@@ -280,33 +297,45 @@
             if (entry.todos && entry.todos.length > 0) {
                 mediaIcon += ' ✓';
             }
+            
+            const entryTextDiv = document.createElement('div');
+            entryTextDiv.className = 'text-[#4a3f35] mt-2 truncate';
+            entryTextDiv.innerHTML = entry.text || 'Media entry';
+
             entryDiv.innerHTML = `
                 <div class="flex-grow overflow-hidden">
                     <p class="font-script text-xl font-semibold text-[#5a4a3a] truncate">${entry.title || 'Untitled Entry'}</p>
                     <p class="text-[#856a4d] text-sm mt-1">${new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
-                    <p class="text-[#4a3f35] mt-2 truncate">${entry.text || 'Media entry'}</p>
+                    <div class="entry-text-container"></div>
                     <div class="text-lg mt-2">${mediaIcon}</div>
                 </div>
                 <div class="flex flex-col gap-2 flex-shrink-0">
                     <button class="delete-btn p-2 rounded-full hover:bg-[#eaddc7] text-red-700" data-id="${entry.id}"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
                 </div>
             `;
+            entryDiv.querySelector('.entry-text-container').appendChild(entryTextDiv);
             return entryDiv;
         }
 
-        function loadEntryForEditing(id) {
-            const entry = allEntriesCache.find(e => e.id === id);
-            if (entry) {
-                resetEntryForm();
-                entryIdInput.value = entry.id;
-                titleInput.value = entry.title;
-                textInput.value = entry.text;
-                tempMedia = entry.media ? [...entry.media] : [];
-                tempTodos = entry.todos ? [...entry.todos] : [];
-                updateMediaPreview();
-                renderTodos();
-                titleInput.scrollIntoView({ behavior: 'smooth' });
+        function openEntryModal(id = null) {
+            resetEntryForm();
+            if (id) {
+                const entry = allEntriesCache.find(e => e.id === id);
+                if (entry) {
+                    entryIdInput.value = entry.id;
+                    titleInput.value = entry.title;
+                    textInput.value = entry.text;
+                    tempMedia = entry.media ? [...entry.media] : [];
+                    tempTodos = entry.todos ? [...entry.todos] : [];
+                    updateMediaPreview();
+                    renderTodos();
+                }
             }
+            entryModal.classList.add('visible');
+        }
+
+        function closeEntryModal() {
+            entryModal.classList.remove('visible');
         }
 
         function resetEntryForm() {
@@ -335,7 +364,7 @@
             try {
                 await saveEntry(entryData);
                 showNotification("Entry saved successfully!", "success");
-                resetEntryForm();
+                closeEntryModal();
                 await refreshDataAndUI();
             } catch (error) {
                 showNotification("Failed to save entry.", "error");
@@ -392,11 +421,12 @@
                     li { margin-bottom: 5px; }
                     li.completed { text-decoration: line-through; color: #888; }
                     .media-placeholder { font-style: italic; color: #666; border: 1px dashed #ccc; padding: 10px; margin-top: 10px; }
+                    .flashback-link { color: #856a4d; text-decoration: underline; }
                 </style>
                 <h1>${entry.title || 'Untitled Entry'}</h1>
                 <p><small>${new Date(entry.timestamp).toLocaleString()}</small></p>
                 <hr>
-                <p style="white-space: pre-wrap;">${entry.text}</p>
+                <div style="white-space: pre-wrap;">${entry.text}</div>
             `;
 
             if (entry.todos && entry.todos.length > 0) {
@@ -443,6 +473,7 @@
             }
         });
         saveBtn.addEventListener('click', handleSave);
+        closeModalBtn.addEventListener('click', closeEntryModal);
         printBtn.addEventListener('click', printEntry);
         addTodoBtn.addEventListener('click', addTodo);
         todoInput.addEventListener('keypress', (e) => {
@@ -458,15 +489,14 @@
         fabMain.addEventListener('click', () => {
             if (recordingType) { stopRecording(); }
             else { 
-                resetEntryForm(); 
-                titleInput.scrollIntoView({ behavior: 'smooth' });
-                titleInput.focus();
+                openEntryModal();
             }
         });
 
         document.getElementById('image-btn').addEventListener('click', () => imageUpload.click());
         document.getElementById('audio-btn').addEventListener('click', async () => { const choice = await showChoiceModal('Audio Action', 'Record', 'Upload'); if (choice === 'record') startRecording('audio'); if (choice === 'upload') audioUpload.click(); });
         document.getElementById('video-btn').addEventListener('click', async () => { const choice = await showChoiceModal('Video Action', 'Record', 'Upload'); if (choice === 'record') startRecording('video'); if (choice === 'upload') videoUpload.click(); });
+        linkBtn.addEventListener('click', showFlashbackSelection);
 
         document.getElementById('prev-month-btn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
         document.getElementById('next-month-btn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
@@ -474,11 +504,40 @@
         journalEntriesCalendarContainer.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.delete-btn');
             const card = e.target.closest('.page-card');
+            const flashbackLink = e.target.closest('.flashback-link');
 
             if (deleteBtn) {
                 e.stopPropagation(); 
                 if(confirm('Are you sure you want to delete this entry?')) {
                     deleteEntry(parseInt(deleteBtn.dataset.id)).then(refreshDataAndUI);
+                }
+                return;
+            }
+
+            if (flashbackLink) {
+                e.stopPropagation();
+                const entryId = parseInt(flashbackLink.dataset.id);
+                const entry = allEntriesCache.find(e => e.id === entryId);
+                if (entry) {
+                    const entryDate = new Date(entry.timestamp);
+                    currentDate = entryDate;
+                    refreshDataAndUI().then(() => {
+                        const dayEl = document.querySelector(`.calendar-day[data-date='${entryDate.toISOString().split('T')[0]}']`);
+                        if (dayEl) {
+                            dayEl.click();
+                            setTimeout(() => {
+                                const cardToHighlight = document.querySelector(`.page-card[data-id='${entryId}']`);
+                                if (cardToHighlight) {
+                                    cardToHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    cardToHighlight.style.transition = 'all 0.3s';
+                                    cardToHighlight.style.transform = 'scale(1.05)';
+                                    setTimeout(() => {
+                                        cardToHighlight.style.transform = 'scale(1)';
+                                    }, 1000);
+                                }
+                            }, 300);
+                        }
+                    });
                 }
                 return;
             }
@@ -615,6 +674,30 @@
                 });
                 cameraSelectModal.classList.add('visible');
             });
+        }
+
+        function showFlashbackSelection() {
+            flashbackOptionsContainer.innerHTML = '';
+            if (allEntriesCache.length === 0) {
+                flashbackOptionsContainer.innerHTML = '<p>No other entries to link to.</p>';
+            } else {
+                allEntriesCache.forEach(entry => {
+                    const button = document.createElement('button');
+                    button.textContent = `${new Date(entry.timestamp).toLocaleDateString()} - ${entry.title || 'Untitled'}`;
+                    button.className = 'w-full text-left py-2 px-4 rounded-lg hover:bg-[#eaddc7] transition';
+                    button.onclick = () => {
+                        insertFlashbackLink(entry);
+                        flashbackModal.classList.remove('visible');
+                    };
+                    flashbackOptionsContainer.appendChild(button);
+                });
+            }
+            flashbackModal.classList.add('visible');
+        }
+
+        function insertFlashbackLink(entry) {
+            const linkText = `<a href="#" class="flashback-link" data-id="${entry.id}">${entry.title || 'link'}</a>`;
+            textInput.value += ` (See: ${linkText}) `;
         }
 
         function stopRecording() { if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); } };
