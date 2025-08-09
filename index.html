@@ -3,72 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codex Notepad - Local Edition</title>
+    <title>Codex Notepad - Journal Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
     <style>
         html { scroll-behavior: smooth; }
-        body { font-family: 'Inter', sans-serif; background: #111827; }
-        .font-serif { font-family: 'Lora', serif; }
+        body { 
+            font-family: 'Special Elite', monospace; 
+            background-color: #fdf6e3; /* Parchment paper color */
+            background-image:
+                linear-gradient(rgba(160, 130, 90, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(160, 130, 90, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #4a3f35;
+        }
+        .font-script { font-family: 'Kalam', cursive; }
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1f2937; }
-        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 4px; }
-        .glass-card { background: rgba(31, 41, 55, 0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        ::-webkit-scrollbar-track { background: #eaddc7; }
+        ::-webkit-scrollbar-thumb { background: #a0825f; border-radius: 4px; }
+        
+        .page-card { 
+            background: #fdf6e3;
+            border: 1px solid #dcd1b8;
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .entry-fade-in { animation: fadeIn 0.5s ease-out; }
-        #notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; color: white; z-index: 1050; opacity: 0; transition: opacity 0.3s, transform 0.3s; background-color: #4f46e5; }
+        
+        #notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; color: #fdf6e3; z-index: 1050; opacity: 0; transition: opacity 0.3s, transform 0.3s; background-color: #856a4d; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         #notification.show { opacity: 1; }
-        #notification.error { background-color: #dc2626; }
+        #notification.error { background-color: #c0392b; }
+        
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }
-        .calendar-day { display: flex; justify-content: center; align-items: center; height: 2.25rem; font-size: 0.875rem; border-radius: 9999px; cursor: pointer; transition: background-color 0.2s; position: relative; }
-        .calendar-day:hover { background-color: #374151; }
-        .calendar-day.today { background-color: #4f46e5; color: white; }
-        .calendar-day.selected { background-color: #6366f1; color: white; }
-        .calendar-day.has-entry::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background-color: #a78bfa; }
+        .calendar-day { display: flex; justify-content: center; align-items: center; height: 2.25rem; font-size: 0.875rem; border-radius: 50%; cursor: pointer; transition: background-color 0.2s, color 0.2s; position: relative; }
+        .calendar-day:hover { background-color: #eaddc7; }
+        .calendar-day.today { font-weight: bold; border: 2px solid #856a4d; }
+        .calendar-day.selected { background-color: #856a4d; color: #fdf6e3; }
+        .calendar-day.has-entry::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background-color: #a0825f; }
         .calendar-day.empty { cursor: default; }
         .calendar-day.empty:hover { background-color: transparent; }
-        .icon-btn { background-color: transparent; border: 1px solid #4b5563; color: #d1d5db; transition: all 0.2s; width: 3rem; height: 3rem; }
-        .icon-btn:hover { background-color: rgba(79, 70, 229, 0.1); border-color: #6366f1; color: white; }
-        #save-btn { background-color: #4f46e5; border-color: #4f46e5; color: white; }
-        #save-btn:hover { background-color: #6366f1; border-color: #6366f1; }
-        #splash-screen { transition: opacity 0.7s ease-out; }
         
-        /* Modal & FAB Recording Styles */
+        .sketch-btn {
+            background-color: transparent;
+            border: none;
+            color: #5a4a3a;
+            transition: all 0.2s;
+            width: 3.5rem; height: 3.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .sketch-btn:hover { background-color: rgba(160, 130, 90, 0.1); color: #3a2a1a; }
+        #save-btn {
+            font-family: 'Kalam', cursive;
+            background-color: #856a4d;
+            border: none;
+            color: #fdf6e3;
+            font-size: 1.1rem;
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        #save-btn:hover { background-color: #6a523a; }
+        
+        #splash-screen { transition: opacity 0.7s ease-out; background-color: #fdf6e3; }
+        
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.visible { opacity: 1; pointer-events: auto; }
         .modal-content { padding: 1.5rem; border-radius: 0.75rem; min-width: 300px; }
+        
         .fab-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; }
-        .fab-main { width: 4rem; height: 4rem; border-radius: 9999px; background-color: #4f46e5; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2); cursor: pointer; transition: transform 0.3s ease, background-color 0.3s ease; }
-        .fab-main:hover { background-color: #6366f1; }
-        .fab-main.is-recording { background-color: #dc2626; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+        .fab-main { width: 4rem; height: 4rem; border-radius: 9999px; background-color: #856a4d; display: flex; align-items: center; justify-content: center; color: #fdf6e3; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2); cursor: pointer; transition: transform 0.3s ease, background-color 0.3s ease; }
+        .fab-main:hover { background-color: #6a523a; }
+        .fab-main.is-recording { background-color: #c0392b; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(192, 57, 43, 0); } 100% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0); } }
+
+        .todo-item { display: flex; align-items: center; gap: 0.5rem; }
+        .todo-item input[type="checkbox"] { display: none; }
+        .todo-item label { cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+        .todo-item label::before { content: '☐'; font-size: 1.5rem; font-family: monospace; }
+        .todo-item input:checked + label::before { content: '☑'; }
+        .todo-item input:checked + label span { text-decoration: line-through; opacity: 0.6; }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200">
+<body>
     <!-- Splash Screen -->
-    <div id="splash-screen" class="fixed inset-0 bg-gray-900 flex flex-col items-center justify-center z-[2000]">
-        <h1 class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 font-serif">Codex</h1>
-        <p class="text-gray-400 mt-2">Your Private Notebook</p>
+    <div id="splash-screen" class="fixed inset-0 flex flex-col items-center justify-center z-[2000]">
+        <h1 class="text-5xl text-[#5a4a3a] font-script">Codex</h1>
+        <p class="text-[#6a523a] mt-2">Your Private Notebook</p>
     </div>
 
     <div class="container mx-auto p-4 md:p-8 max-w-3xl opacity-0" id="main-content">
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 font-serif">Codex Notepad</h1>
-            <p id="greeting" class="text-gray-400 mt-2 text-sm md:text-base">Your private, offline multimedia journal.</p>
+            <h1 class="text-4xl md:text-6xl text-[#6a523a] font-script">Codex Notepad</h1>
+            <p id="greeting" class="text-[#856a4d] mt-2 text-sm md:text-base">Your private, offline multimedia journal.</p>
         </header>
 
         <main class="flex flex-col gap-8">
             <!-- Calendar Section -->
             <section id="calendar-section">
-                <div class="glass-card p-4 md:p-6 rounded-xl">
+                <div class="page-card p-4 md:p-6 rounded-md">
                     <div class="flex justify-between items-center mb-4">
-                        <button id="prev-month-btn" class="p-2 rounded-full hover:bg-gray-700"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-                        <h2 id="month-year-header" class="text-lg md:text-xl font-semibold text-white"></h2>
-                        <button id="next-month-btn" class="p-2 rounded-full hover:bg-gray-700"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+                        <button id="prev-month-btn" class="p-2 rounded-full hover:bg-[#eaddc7]"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                        <h2 id="month-year-header" class="text-xl md:text-2xl font-semibold text-[#5a4a3a] font-script"></h2>
+                        <button id="next-month-btn" class="p-2 rounded-full hover:bg-[#eaddc7]"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
                     </div>
-                    <div class="grid grid-cols-7 text-center text-gray-400 mb-2 text-xs">
+                    <div class="grid grid-cols-7 text-center text-[#856a4d] mb-2 text-xs font-sans">
                         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                     </div>
                     <div id="calendar-grid" class="calendar-grid"></div>
@@ -78,18 +123,30 @@
 
             <!-- Entry Form Section -->
             <section id="entry-form-section">
-                <div class="glass-card p-4 md:p-6 rounded-xl shadow-lg">
-                    <input type="text" id="title-input" class="w-full bg-transparent text-2xl md:text-3xl font-bold text-white outline-none mb-2 font-serif" placeholder="Entry Title...">
-                    <div class="w-full h-px bg-gray-600 mb-4"></div>
-                    <textarea id="text-input" class="w-full p-2 bg-transparent text-gray-300 rounded-lg focus:ring-0 focus:outline-none font-serif" rows="8" placeholder="Write your thoughts..."></textarea>
+                <div class="page-card p-4 md:p-6 rounded-md shadow-lg">
+                    <input type="text" id="title-input" class="w-full bg-transparent text-3xl md:text-4xl font-bold text-[#5a4a3a] outline-none mb-2 font-script" placeholder="Entry Title...">
+                    <div class="w-full h-px bg-[#dcd1b8] mb-4"></div>
+                    <textarea id="text-input" class="w-full p-2 bg-transparent text-[#4a3f35] rounded-lg focus:ring-0 focus:outline-none" rows="8" placeholder="Write your thoughts..."></textarea>
                     <div id="media-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
-                    <div class="mt-6 pt-4 border-t border-gray-700 flex flex-wrap items-center gap-2 md:gap-4">
-                        <div class="flex gap-2 md:gap-4">
-                            <button id="image-btn" title="Add Image" class="icon-btn rounded-lg flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
-                            <button id="audio-btn" title="Add Audio" class="icon-btn rounded-lg flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg></button>
-                            <button id="video-btn" title="Add Video" class="icon-btn rounded-lg flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
+                    
+                    <!-- To-Do List Section -->
+                    <div class="mt-6 pt-4 border-t border-[#dcd1b8]">
+                        <h3 class="font-script text-2xl text-[#5a4a3a] mb-2">To-Do List</h3>
+                        <div id="todo-list" class="space-y-2"></div>
+                        <div class="flex gap-2 mt-2">
+                            <input type="text" id="todo-input" class="flex-grow bg-transparent border-b-2 border-[#dcd1b8] focus:outline-none focus:border-[#a0825f]" placeholder="New task...">
+                            <button id="add-todo-btn" class="font-script bg-[#a0825f] text-white px-3 rounded-md hover:bg-[#856a4d]">Add</button>
                         </div>
-                        <button id="save-btn" class="w-full mt-4 md:mt-0 md:w-auto md:ml-auto py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2">Save</button>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-[#dcd1b8] flex flex-wrap items-center gap-2 md:gap-4">
+                        <div class="flex gap-2 md:gap-4">
+                            <button id="image-btn" title="Add Image" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
+                            <button id="audio-btn" title="Add Audio" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg></button>
+                            <button id="video-btn" title="Add Video" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
+                            <button id="print-btn" title="Print/Download PDF" class="sketch-btn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg></button>
+                        </div>
+                        <button id="save-btn" class="w-full mt-4 md:mt-0 md:w-auto md:ml-auto">Save</button>
                     </div>
                 </div>
             </section>
@@ -108,9 +165,9 @@
     <div id="notification"></div>
     
     <!-- Modals -->
-    <div id="choice-modal" class="modal-overlay"><div class="modal-content glass-card"><h3 id="choice-modal-title" class="text-xl font-semibold text-white mb-4">Choose Action</h3><div class="flex justify-around gap-4"><button id="choice-modal-option1" class="flex-1 py-2 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">Record</button><button id="choice-modal-option2" class="flex-1 py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition">Upload</button></div></div></div>
-    <div id="camera-preview-modal" class="modal-overlay"><div class="modal-content glass-card p-2"><video id="camera-preview-video" class="w-full max-w-lg rounded-lg" autoplay muted></video><button id="stop-recording-btn" class="w-full mt-2 py-2 px-4 rounded-lg bg-red-600 hover:bg-red-500 text-white transition">Stop Recording</button></div></div>
-    <div id="camera-select-modal" class="modal-overlay"><div id="camera-select-content" class="modal-content glass-card"><h3 class="text-xl font-semibold text-white mb-4">Select Camera</h3><div id="camera-options" class="flex flex-col gap-2"></div></div></div>
+    <div id="choice-modal" class="modal-overlay"><div class="modal-content page-card"><h3 id="choice-modal-title" class="text-xl font-semibold text-[#5a4a3a] mb-4 font-script">Choose Action</h3><div class="flex justify-around gap-4"><button id="choice-modal-option1" class="flex-1 py-2 px-4 rounded-lg bg-[#856a4d] hover:bg-[#6a523a] text-white transition">Record</button><button id="choice-modal-option2" class="flex-1 py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition">Upload</button></div></div></div>
+    <div id="camera-preview-modal" class="modal-overlay"><div class="modal-content page-card p-2"><video id="camera-preview-video" class="w-full max-w-lg rounded-lg" autoplay muted></video><button id="stop-recording-btn" class="w-full mt-2 py-2 px-4 rounded-lg bg-red-600 hover:bg-red-500 text-white transition">Stop Recording</button></div></div>
+    <div id="camera-select-modal" class="modal-overlay"><div id="camera-select-content" class="modal-content page-card"><h3 class="text-xl font-semibold text-[#5a4a3a] mb-4 font-script">Select Camera</h3><div id="camera-options" class="flex flex-col gap-2"></div></div></div>
     <div id="image-viewer-modal" class="modal-overlay p-4 cursor-pointer">
         <img id="viewer-img" class="max-w-full max-h-full object-contain rounded-lg" src="">
     </div>
@@ -118,9 +175,10 @@
 
     <script>
         // --- GLOBAL STATE ---
-        const dbName = "CodexNotepadDB_Local";
+        const dbName = "CodexNotepadDB_Journal";
         let db;
         let tempMedia = []; // Array of {type, data}
+        let tempTodos = []; // Array of {text, completed}
         let currentDate = new Date();
         let allEntriesCache = [];
         let mediaRecorder;
@@ -137,7 +195,11 @@
         const titleInput = document.getElementById('title-input');
         const textInput = document.getElementById('text-input');
         const mediaPreviewContainer = document.getElementById('media-preview');
+        const todoListContainer = document.getElementById('todo-list');
+        const todoInput = document.getElementById('todo-input');
+        const addTodoBtn = document.getElementById('add-todo-btn');
         const saveBtn = document.getElementById('save-btn');
+        const printBtn = document.getElementById('print-btn');
         const imageUpload = document.getElementById('image-upload');
         const audioUpload = document.getElementById('audio-upload');
         const videoUpload = document.getElementById('video-upload');
@@ -165,7 +227,7 @@
             if(selectedDay) {
                 renderEntriesForDate(new Date(selectedDay.dataset.date), journalEntriesCalendarContainer);
             } else {
-                journalEntriesCalendarContainer.innerHTML = '<p class="text-center text-gray-500">Select a date on the calendar to see entries.</p>';
+                journalEntriesCalendarContainer.innerHTML = '<p class="text-center text-[#856a4d]">Select a date on the calendar to see entries.</p>';
             }
         }
 
@@ -198,7 +260,7 @@
             container.innerHTML = '';
             const entries = allEntriesCache.filter(e => new Date(e.timestamp).toDateString() === date.toDateString());
             if (entries.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-500">No entries for this date.</p>`;
+                container.innerHTML = `<p class="text-center text-[#856a4d]">No entries for this date.</p>`;
             } else {
                 entries.forEach(entry => container.appendChild(createEntryCard(entry)));
             }
@@ -207,23 +269,26 @@
         // --- ENTRY HANDLING ---
         function createEntryCard(entry) {
             const entryDiv = document.createElement('div');
-            entryDiv.className = 'glass-card p-4 rounded-lg flex justify-between items-start gap-4';
+            entryDiv.className = 'page-card p-4 rounded-md flex justify-between items-start gap-4';
             let mediaIcon = '';
             if (entry.media && entry.media.length > 0) {
                 if (entry.media.some(m => m.type === 'image')) mediaIcon += '🖼️';
                 if (entry.media.some(m => m.type === 'audio')) mediaIcon += '🎵';
-                if (entry.media.some(m => m.type === 'video')) mediaIcon += '�';
+                if (entry.media.some(m => m.type === 'video')) mediaIcon += '🎬';
+            }
+            if (entry.todos && entry.todos.length > 0) {
+                mediaIcon += ' ✓';
             }
             entryDiv.innerHTML = `
                 <div class="flex-grow overflow-hidden">
-                    <p class="font-serif text-lg font-semibold text-white truncate">${entry.title || 'Untitled Entry'}</p>
-                    <p class="text-gray-400 text-sm mt-1">${new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
-                    <p class="text-gray-300 mt-2 truncate font-serif">${entry.text || 'Media entry'}</p>
+                    <p class="font-script text-xl font-semibold text-[#5a4a3a] truncate">${entry.title || 'Untitled Entry'}</p>
+                    <p class="text-[#856a4d] text-sm mt-1">${new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                    <p class="text-[#4a3f35] mt-2 truncate">${entry.text || 'Media entry'}</p>
                     <div class="text-lg mt-2">${mediaIcon}</div>
                 </div>
                 <div class="flex flex-col gap-2 flex-shrink-0">
-                    <button class="edit-btn p-2 rounded-full hover:bg-gray-700" data-id="${entry.id}"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 13V4.207L14.793 14H6a1 1 0 01-1-1z"></path></svg></button>
-                    <button class="delete-btn p-2 rounded-full hover:bg-gray-700 text-red-500" data-id="${entry.id}"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
+                    <button class="edit-btn p-2 rounded-full hover:bg-[#eaddc7]" data-id="${entry.id}"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 13V4.207L14.793 14H6a1 1 0 01-1-1z"></path></svg></button>
+                    <button class="delete-btn p-2 rounded-full hover:bg-[#eaddc7] text-red-700" data-id="${entry.id}"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
                 </div>
             `;
             return entryDiv;
@@ -237,7 +302,9 @@
                 titleInput.value = entry.title;
                 textInput.value = entry.text;
                 tempMedia = entry.media ? [...entry.media] : [];
+                tempTodos = entry.todos ? [...entry.todos] : [];
                 updateMediaPreview();
+                renderTodos();
                 titleInput.scrollIntoView({ behavior: 'smooth' });
             }
         }
@@ -247,15 +314,17 @@
             titleInput.value = '';
             textInput.value = '';
             tempMedia = [];
+            tempTodos = [];
             updateMediaPreview();
+            renderTodos();
         }
         
         async function handleSave() {
             const title = titleInput.value.trim();
             const text = textInput.value.trim();
-            if (!title && !text && tempMedia.length === 0) { showNotification("Entry cannot be empty.", "error"); return; }
+            if (!title && !text && tempMedia.length === 0 && tempTodos.length === 0) { showNotification("Entry cannot be empty.", "error"); return; }
             
-            const entryData = { title, text, media: tempMedia };
+            const entryData = { title, text, media: tempMedia, todos: tempTodos };
             if(entryIdInput.value) {
                 entryData.id = parseInt(entryIdInput.value);
                 entryData.timestamp = allEntriesCache.find(e => e.id === entryData.id).timestamp;
@@ -273,6 +342,89 @@
             }
         }
         
+        // --- TODO LIST ---
+        function renderTodos() {
+            todoListContainer.innerHTML = '';
+            tempTodos.forEach((todo, index) => {
+                const todoEl = document.createElement('div');
+                todoEl.className = 'todo-item';
+                todoEl.innerHTML = `
+                    <input type="checkbox" id="todo-${index}" ${todo.completed ? 'checked' : ''}>
+                    <label for="todo-${index}"><span>${todo.text}</span></label>
+                    <button class="delete-todo-btn ml-auto text-red-700 hover:text-red-900">&times;</button>
+                `;
+                todoEl.querySelector('input').addEventListener('change', () => {
+                    tempTodos[index].completed = !tempTodos[index].completed;
+                    renderTodos();
+                });
+                todoEl.querySelector('.delete-todo-btn').addEventListener('click', () => {
+                    tempTodos.splice(index, 1);
+                    renderTodos();
+                });
+                todoListContainer.appendChild(todoEl);
+            });
+        }
+
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (text) {
+                tempTodos.push({ text: text, completed: false });
+                todoInput.value = '';
+                renderTodos();
+            }
+        }
+
+        // --- PRINT ---
+        function printEntry() {
+            if (!entryIdInput.value) {
+                showNotification("Please save the entry before printing.", "error");
+                return;
+            }
+            const entry = allEntriesCache.find(e => e.id === parseInt(entryIdInput.value));
+            if (!entry) return;
+
+            let printContent = `
+                <style>
+                    body { font-family: 'Special Elite', monospace; color: #333; }
+                    h1 { font-family: 'Kalam', cursive; }
+                    img { max-width: 50%; border: 1px solid #ccc; padding: 5px; margin-top: 10px; }
+                    ul { list-style: none; padding-left: 0; }
+                    li { margin-bottom: 5px; }
+                    li.completed { text-decoration: line-through; color: #888; }
+                    .media-placeholder { font-style: italic; color: #666; border: 1px dashed #ccc; padding: 10px; margin-top: 10px; }
+                </style>
+                <h1>${entry.title || 'Untitled Entry'}</h1>
+                <p><small>${new Date(entry.timestamp).toLocaleString()}</small></p>
+                <hr>
+                <p style="white-space: pre-wrap;">${entry.text}</p>
+            `;
+
+            if (entry.todos && entry.todos.length > 0) {
+                printContent += '<h2>To-Do List</h2><ul>';
+                entry.todos.forEach(todo => {
+                    printContent += `<li class="${todo.completed ? 'completed' : ''}">[${todo.completed ? 'x' : ' '}] ${todo.text}</li>`;
+                });
+                printContent += '</ul>';
+            }
+
+            if (entry.media && entry.media.length > 0) {
+                printContent += '<h2>Attachments</h2>';
+                entry.media.forEach(media => {
+                    if (media.type === 'image') {
+                        printContent += `<img src="${media.data}" alt="Journal Image">`;
+                    } else {
+                        printContent += `<div class="media-placeholder">[${media.type} attachment]</div>`;
+                    }
+                });
+            }
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+
         // --- EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => {
@@ -291,6 +443,14 @@
             }
         });
         saveBtn.addEventListener('click', handleSave);
+        printBtn.addEventListener('click', printEntry);
+        addTodoBtn.addEventListener('click', addTodo);
+        todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addTodo();
+            }
+        });
         imageUpload.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'image'));
         audioUpload.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'audio'));
         videoUpload.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'video'));
@@ -353,7 +513,7 @@
                 } else if (media.type === 'video') {
                     mediaElement = `<video controls src="${url}" class="rounded-lg w-full h-auto"></video>`;
                 }
-                wrapper.innerHTML = `${mediaElement}<button onclick="removeMedia(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 leading-none w-6 h-6 flex items-center justify-center text-xs">X</button>`;
+                wrapper.innerHTML = `${mediaElement}<button onclick="removeMedia(${index})" class="absolute top-1 right-1 bg-red-700 text-white rounded-full p-1 leading-none w-6 h-6 flex items-center justify-center text-xs">X</button>`;
                 mediaPreviewContainer.appendChild(wrapper);
             });
         };
@@ -456,4 +616,3 @@
     </script>
 </body>
 </html>
-�
