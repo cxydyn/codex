@@ -1,58 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codex Notepad - Online Edition</title>
+    <title>Codex Notepad - Local Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #111827; color: #d1d5db; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #111827; }
         .font-serif { font-family: 'Lora', serif; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1f2937; }
         ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 4px; }
-        
         .glass-card { background: rgba(31, 41, 55, 0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-
-        #notification { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; color: white; z-index: 1050; opacity: 0; transition: opacity 0.3s, transform 0.3s; background-color: #4f46e5; pointer-events: none; }
-        #notification.show { opacity: 1; pointer-events: auto; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .entry-fade-in { animation: fadeIn 0.5s ease-out; }
+        #notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; color: white; z-index: 1050; opacity: 0; transition: opacity 0.3s, transform 0.3s; background-color: #4f46e5; }
+        #notification.show { opacity: 1; }
         #notification.error { background-color: #dc2626; }
-
-        #bottom-nav { transition: background-color 0.3s; }
-        .nav-btn.active { color: white; }
-        .nav-btn.active svg { color: #818cf8; }
-
-        #entry-editor-overlay { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        #entry-editor-overlay.visible { transform: translateY(0); }
-
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }
-        .calendar-day { display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; font-size: 0.875rem; border-radius: 9999px; cursor: pointer; transition: background-color 0.2s, color 0.2s; position: relative; }
-        .calendar-day:not(.empty):hover { background-color: #374151; }
-        .calendar-day.today { font-weight: 700; border: 1px solid #6366f1; }
-        .calendar-day.selected { background-color: #4f46e5; color: white; border: 1px solid #4f46e5; }
-        .calendar-day.has-entry::after { content: ''; position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background-color: #a78bfa; }
+        .calendar-day { display: flex; justify-content: center; align-items: center; height: 2.25rem; font-size: 0.875rem; border-radius: 9999px; cursor: pointer; transition: background-color 0.2s; position: relative; }
+        .calendar-day:hover { background-color: #374151; }
+        .calendar-day.today { background-color: #4f46e5; color: white; }
+        .calendar-day.selected { background-color: #6366f1; color: white; }
+        .calendar-day.has-entry::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background-color: #a78bfa; }
         .calendar-day.empty { cursor: default; }
-
-        .icon-btn { background-color: transparent; border: 1px solid #4b5563; color: #d1d5db; transition: all 0.2s; }
-        .icon-btn:hover { background-color: rgba(79, 70, 229, 0.2); border-color: #6366f1; color: white; }
-        
+        .calendar-day.empty:hover { background-color: transparent; }
+        .icon-btn { background-color: transparent; border: 1px solid #4b5563; color: #d1d5db; transition: all 0.2s; width: 3rem; height: 3rem; }
+        .icon-btn:hover { background-color: rgba(79, 70, 229, 0.1); border-color: #6366f1; color: white; }
+        #save-btn { background-color: #4f46e5; border-color: #4f46e5; color: white; }
+        #save-btn:hover { background-color: #6366f1; border-color: #6366f1; }
         #splash-screen { transition: opacity 0.7s ease-out; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
+        /* Modal & FAB Recording Styles */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.visible { opacity: 1; pointer-events: auto; }
         .modal-content { padding: 1.5rem; border-radius: 0.75rem; min-width: 300px; }
-        
+        .fab-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; }
         .fab-main { width: 4rem; height: 4rem; border-radius: 9999px; background-color: #4f46e5; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2); cursor: pointer; transition: transform 0.3s ease, background-color 0.3s ease; }
-        .fab-main:hover { background-color: #6366f1; transform: scale(1.05); }
+        .fab-main:hover { background-color: #6366f1; }
         .fab-main.is-recording { background-color: #dc2626; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
     </style>
@@ -60,115 +49,87 @@
 <body class="bg-gray-900 text-gray-200">
     <!-- Splash Screen -->
     <div id="splash-screen" class="fixed inset-0 bg-gray-900 flex flex-col items-center justify-center z-[2000]">
-        <div class="loader"></div>
-        <p class="text-gray-400 mt-4">Loading Journal...</p>
+        <h1 class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 font-serif">Codex</h1>
+        <p class="text-gray-400 mt-2">Your Private Notebook</p>
     </div>
 
-    <div class="container mx-auto max-w-7xl opacity-0" id="main-content">
-        <div class="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-4 md:gap-8 p-4 md:p-8">
-            <!-- Desktop Sidebar Navigation -->
-            <aside class="hidden md:flex md:flex-col md:glass-card md:p-4 rounded-xl md:self-start h-full">
-                <header class="text-left mb-8">
-                    <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 font-serif">Codex Notepad</h1>
-                    <p id="greeting" class="text-gray-400 mt-2 text-sm">Your private journal.</p>
-                </header>
-                <nav id="desktop-nav" class="flex flex-col space-y-2">
-                    <!-- Desktop nav buttons will be inserted here by JS -->
-                </nav>
-            </aside>
+    <div class="container mx-auto p-4 md:p-8 max-w-3xl opacity-0" id="main-content">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 font-serif">Codex Notepad</h1>
+            <p id="greeting" class="text-gray-400 mt-2 text-sm md:text-base">Your private, offline multimedia journal.</p>
+        </header>
 
-            <!-- Main Content -->
-            <main class="pb-24 md:pb-0">
-                 <!-- Mobile Header -->
-                <header class="md:hidden text-center mb-6">
-                    <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 font-serif">Codex Notepad</h1>
-                    <p id="greeting-mobile" class="text-gray-400 mt-1 text-sm">Your private journal.</p>
-                </header>
-                
-                <div id="tab-content-calendar" class="tab-content active fade-in">
-                    <div class="glass-card p-4 md:p-6 rounded-xl">
-                        <div class="flex justify-between items-center mb-4">
-                            <button id="prev-month-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-                            <h2 id="month-year-header" class="text-lg md:text-xl font-semibold text-white"></h2>
-                            <button id="next-month-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
-                        </div>
-                        <div class="grid grid-cols-7 text-center text-gray-400 mb-2 text-xs font-bold">
-                            <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
-                        </div>
-                        <div id="calendar-grid" class="calendar-grid"></div>
+        <main class="flex flex-col gap-8">
+            <!-- Calendar Section -->
+            <section id="calendar-section">
+                <div class="glass-card p-4 md:p-6 rounded-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="prev-month-btn" class="p-2 rounded-full hover:bg-gray-700"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                        <h2 id="month-year-header" class="text-lg md:text-xl font-semibold text-white"></h2>
+                        <button id="next-month-btn" class="p-2 rounded-full hover:bg-gray-700"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
                     </div>
-                    <div id="journal-entries-calendar" class="mt-6 space-y-4"></div>
+                    <div class="grid grid-cols-7 text-center text-gray-400 mb-2 text-xs">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                    </div>
+                    <div id="calendar-grid" class="calendar-grid"></div>
                 </div>
-            </main>
-        </div>
-    </div>
-    
-    <!-- Full-screen Entry Editor Overlay -->
-    <div id="entry-editor-overlay" class="fixed inset-0 bg-gray-900 z-50 transform translate-y-full p-4 flex flex-col">
-        <!-- Header for the editor -->
-        <div class="flex-shrink-0 flex items-center justify-between pb-4 border-b border-gray-700">
-            <button id="close-editor-btn" class="p-2 text-gray-400 hover:text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-            <h2 id="editor-title" class="text-lg font-semibold text-white">New Entry</h2>
-            <button id="save-btn" class="py-2 px-5 rounded-lg flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition">Save</button>
-        </div>
-        
-        <!-- Scrollable content area -->
-        <div class="flex-grow overflow-y-auto pt-4 pb-24">
-            <input type="text" id="title-input" class="w-full bg-transparent text-2xl md:text-3xl font-bold text-white outline-none mb-2 font-serif" placeholder="Entry Title...">
-            <textarea id="text-input" class="w-full p-2 bg-transparent text-gray-300 rounded-lg focus:ring-0 focus:outline-none font-serif text-lg leading-relaxed" rows="8" placeholder="Write your thoughts..."></textarea>
-            <div id="media-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
-        </div>
+                <div id="journal-entries-calendar" class="mt-8 space-y-6"></div>
+            </section>
 
-        <!-- Pinned bottom action bar -->
-        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-700">
-            <div class="flex justify-center items-center gap-4">
-                 <button id="image-btn" title="Add Image" class="icon-btn rounded-lg w-14 h-14 flex items-center justify-center"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
-                 <button id="audio-btn" title="Add Audio" class="icon-btn rounded-lg w-14 h-14 flex items-center justify-center"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg></button>
-                 <button id="video-btn" title="Add Video" class="icon-btn rounded-lg w-14 h-14 flex items-center justify-center"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
-            </div>
-        </div>
+            <!-- Entry Form Section -->
+            <section id="entry-form-section">
+                <div class="glass-card p-4 md:p-6 rounded-xl shadow-lg">
+                    <input type="text" id="title-input" class="w-full bg-transparent text-2xl md:text-3xl font-bold text-white outline-none mb-2 font-serif" placeholder="Entry Title...">
+                    <div class="w-full h-px bg-gray-600 mb-4"></div>
+                    <textarea id="text-input" class="w-full p-2 bg-transparent text-gray-300 rounded-lg focus:ring-0 focus:outline-none font-serif" rows="8" placeholder="Write your thoughts..."></textarea>
+                    <div id="media-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+                    <div class="mt-6 pt-4 border-t border-gray-700 flex flex-wrap items-center gap-2 md:gap-4">
+                        <div class="flex gap-2 md:gap-4">
+                            <button id="image-btn" title="Add Image" class="icon-btn rounded-lg flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
+                            <button id="audio-btn" title="Add Audio" class="icon-btn rounded-lg flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg></button>
+                            <button id="video-btn" title="Add Video" class="icon-btn rounded-lg flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
+                        </div>
+                        <button id="save-btn" class="w-full mt-4 md:mt-0 md:w-auto md:ml-auto py-3 md:py-2 px-6 rounded-lg flex items-center justify-center gap-2">Save</button>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
-    
-    <!-- Mobile Bottom Navigation -->
-    <nav id="bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800/70 backdrop-blur-sm border-t border-gray-700/50 flex justify-around p-2 z-40">
-        <!-- Mobile nav buttons will be inserted here by JS -->
-    </nav>
     
     <!-- FAB for New Entry -->
-    <div id="fab-container" class="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-40">
-        <div id="fab-main" class="fab-main">
-            <!-- Icon changes dynamically -->
-        </div>
+    <div id="fab-container" class="fab-container">
+        <div id="fab-main" class="fab-main"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg></div>
     </div>
     
-    <!-- Hidden inputs and Modals -->
     <input type="hidden" id="entry-id-input">
     <input type="file" id="image-upload" class="hidden" accept="image/*">
     <input type="file" id="audio-upload" class="hidden" accept="audio/*">
     <input type="file" id="video-upload" class="hidden" accept="video/*">
     <div id="notification"></div>
     
+    <!-- Modals -->
     <div id="choice-modal" class="modal-overlay"><div class="modal-content glass-card"><h3 id="choice-modal-title" class="text-xl font-semibold text-white mb-4">Choose Action</h3><div class="flex justify-around gap-4"><button id="choice-modal-option1" class="flex-1 py-2 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">Record</button><button id="choice-modal-option2" class="flex-1 py-2 px-4 rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition">Upload</button></div></div></div>
     <div id="camera-preview-modal" class="modal-overlay"><div class="modal-content glass-card p-2"><video id="camera-preview-video" class="w-full max-w-lg rounded-lg" autoplay muted></video><button id="stop-recording-btn" class="w-full mt-2 py-2 px-4 rounded-lg bg-red-600 hover:bg-red-500 text-white transition">Stop Recording</button></div></div>
     <div id="camera-select-modal" class="modal-overlay"><div id="camera-select-content" class="modal-content glass-card"><h3 class="text-xl font-semibold text-white mb-4">Select Camera</h3><div id="camera-options" class="flex flex-col gap-2"></div></div></div>
+    <div id="image-viewer-modal" class="modal-overlay p-4 cursor-pointer">
+        <img id="viewer-img" class="max-w-full max-h-full object-contain rounded-lg" src="">
+    </div>
+
 
     <script>
         // --- GLOBAL STATE ---
-        let tempMedia = [];
+        const dbName = "CodexNotepadDB_Local";
+        let db;
+        let tempMedia = []; // Array of {type, data}
         let currentDate = new Date();
         let allEntriesCache = [];
         let mediaRecorder;
         let recordingType = null;
         let mediaStream;
-        let activeTab = 'calendar';
-
+        
         // --- DOM ELEMENTS ---
         const splashScreen = document.getElementById('splash-screen');
         const mainContent = document.getElementById('main-content');
-        const desktopNavContainer = document.getElementById('desktop-nav');
-        const bottomNavContainer = document.getElementById('bottom-nav');
         const calendarGrid = document.getElementById('calendar-grid');
         const monthYearHeader = document.getElementById('month-year-header');
         const journalEntriesCalendarContainer = document.getElementById('journal-entries-calendar');
@@ -187,103 +148,24 @@
         const stopRecordingBtn = document.getElementById('stop-recording-btn');
         const cameraSelectModal = document.getElementById('camera-select-modal');
         const cameraOptionsContainer = document.getElementById('camera-options');
-        const entryEditorOverlay = document.getElementById('entry-editor-overlay');
-        const editorTitle = document.getElementById('editor-title');
+        const imageViewerModal = document.getElementById('image-viewer-modal');
+        const viewerImg = document.getElementById('viewer-img');
 
-        // --- ICONS ---
-        const ICONS = {
-            edit: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>`,
-            stop: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 5a1 1 0 011-1h8a1 1 0 011 1v8a1 1 0 01-1 1H6a1 1 0 01-1-1V5z" clip-rule="evenodd" /></svg>`
-        };
+        // --- DATABASE (IndexedDB) ---
+        function initDB() { return new Promise((resolve, reject) => { const request = indexedDB.open(dbName, 1); request.onerror = (e) => reject("DB Error"); request.onupgradeneeded = (e) => { if (!e.target.result.objectStoreNames.contains('entries')) { e.target.result.createObjectStore('entries', { keyPath: 'id', autoIncrement: true }); } }; request.onsuccess = (e) => { db = e.target.result; resolve(db); }; }); }
+        function saveEntry(entry) { return new Promise((resolve, reject) => { const tx = db.transaction(['entries'], 'readwrite'); const store = tx.objectStore('entries'); const request = entry.id ? store.put(entry) : store.add(entry); request.onsuccess = (e) => resolve(e.target.result); request.onerror = (e) => reject(e.target.error); }); }
+        function getAllEntries() { return new Promise((resolve, reject) => { db.transaction(['entries'], 'readonly').objectStore('entries').getAll().onsuccess = (e) => resolve(e.target.result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))); }); }
+        function deleteEntry(id) { return new Promise((resolve, reject) => { db.transaction(['entries'], 'readwrite').objectStore('entries').delete(id).onsuccess = () => resolve(); }); }
 
         // --- CORE APP LOGIC & DATA HANDLING ---
-        function showLoader(show) {
-            splashScreen.style.display = show ? 'flex' : 'none';
-            mainContent.style.opacity = show ? '0' : '1';
-        }
-
         async function refreshDataAndUI() {
-            showLoader(true);
-            google.script.run
-                .withSuccessHandler(entries => {
-                    allEntriesCache = entries;
-                    generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
-                    const selectedDay = document.querySelector('.calendar-day.selected');
-                    if (selectedDay) {
-                        renderEntriesForDate(new Date(selectedDay.dataset.date), journalEntriesCalendarContainer);
-                    } else {
-                        journalEntriesCalendarContainer.innerHTML = '<p class="text-center text-gray-500 fade-in">Select a date to see entries.</p>';
-                    }
-                    showLoader(false);
-                })
-                .withFailureHandler(err => {
-                    showNotification('Error loading entries: ' + err, 'error');
-                    showLoader(false);
-                })
-                .getEntries();
-        }
-
-        // --- UI & NAVIGATION ---
-        function setGreeting() {
-            const hour = new Date().getHours();
-            let greetingText = 'Welcome!';
-            if (hour < 12) greetingText = 'Good Morning';
-            else if (hour < 18) greetingText = 'Good Afternoon';
-            else greetingText = 'Good Evening';
-            document.getElementById('greeting').textContent = greetingText;
-            document.getElementById('greeting-mobile').textContent = greetingText;
-        }
-
-        function createNavButtons() {
-            const navItems = [
-                { id: 'calendar', label: 'Calendar', icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>` }
-            ];
-
-            desktopNavContainer.innerHTML = '';
-            bottomNavContainer.innerHTML = '';
-
-            navItems.forEach(item => {
-                const desktopBtn = document.createElement('button');
-                desktopBtn.className = 'nav-btn flex items-center space-x-3 text-left py-2 px-3 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors';
-                desktopBtn.dataset.tab = item.id;
-                desktopBtn.innerHTML = `${item.icon.replace('h-6 w-6', 'h-5 w-5')} <span class="font-medium">${item.label}</span>`;
-                desktopNavContainer.appendChild(desktopBtn);
-                
-                const mobileBtn = document.createElement('button');
-                mobileBtn.className = 'nav-btn flex flex-col items-center space-y-1 text-gray-400 p-1';
-                mobileBtn.dataset.tab = item.id;
-                mobileBtn.innerHTML = `${item.icon} <span class="text-xs">${item.label}</span>`;
-                bottomNavContainer.appendChild(mobileBtn);
-            });
-
-            document.querySelectorAll('.nav-btn').forEach(button => {
-                button.addEventListener('click', () => switchToTab(button.dataset.tab));
-            });
-            updateActiveNav();
-        }
-
-        function switchToTab(tabName) {
-            activeTab = tabName;
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.toggle('active', content.id === `tab-content-${tabName}`);
-            });
-            updateActiveNav();
-            updateFabIcon();
-        }
-
-        function updateActiveNav() {
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.tab === activeTab);
-            });
-        }
-
-        function updateFabIcon() {
-            if (recordingType) {
-                fabMain.innerHTML = ICONS.stop;
-                fabMain.classList.add('is-recording');
+            allEntriesCache = await getAllEntries();
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            const selectedDay = document.querySelector('.calendar-day.selected');
+            if(selectedDay) {
+                renderEntriesForDate(new Date(selectedDay.dataset.date), journalEntriesCalendarContainer);
             } else {
-                fabMain.innerHTML = ICONS.edit;
-                fabMain.classList.remove('is-recording');
+                journalEntriesCalendarContainer.innerHTML = '<p class="text-center text-gray-500">Select a date on the calendar to see entries.</p>';
             }
         }
 
@@ -294,19 +176,15 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             monthYearHeader.textContent = `${new Date(year, month).toLocaleString('en-US', { month: 'long', year: 'numeric' })}`;
             for (let i = 0; i < firstDay; i++) { calendarGrid.innerHTML += `<div class="calendar-day empty"></div>`; }
-            
             const today = new Date();
-            const entryDates = new Set(allEntriesCache.map(e => new Date(e.timestamp).toDateString()));
-
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayEl = document.createElement('div');
                 dayEl.className = 'calendar-day';
                 dayEl.textContent = day;
                 const thisDate = new Date(year, month, day);
                 dayEl.dataset.date = thisDate.toISOString().split('T')[0];
-                if (thisDate.toDateString() === today.toDateString()) dayEl.classList.add('today');
-                if (entryDates.has(thisDate.toDateString())) dayEl.classList.add('has-entry');
-                
+                if (thisDate.toDateString() === today.toDateString()) { dayEl.classList.add('today'); }
+                if(allEntriesCache.some(e => new Date(e.timestamp).toDateString() === thisDate.toDateString())) { dayEl.classList.add('has-entry'); }
                 dayEl.addEventListener('click', () => {
                     document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
                     dayEl.classList.add('selected');
@@ -318,12 +196,9 @@
         
         function renderEntriesForDate(date, container) {
             container.innerHTML = '';
-            const entries = allEntriesCache
-                .filter(e => new Date(e.timestamp).toDateString() === date.toDateString())
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); 
-                
+            const entries = allEntriesCache.filter(e => new Date(e.timestamp).toDateString() === date.toDateString());
             if (entries.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-500 fade-in">No entries for this date.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-500">No entries for this date.</p>`;
             } else {
                 entries.forEach(entry => container.appendChild(createEntryCard(entry)));
             }
@@ -332,63 +207,39 @@
         // --- ENTRY HANDLING ---
         function createEntryCard(entry) {
             const entryDiv = document.createElement('div');
-            entryDiv.className = 'glass-card p-4 rounded-lg flex justify-between items-start gap-4 fade-in';
-            let mediaIcons = '';
-            // UPDATED: Check hasMedia property from the light entry object
-            if (entry.hasMedia) {
-                mediaIcons = '📎'; // Generic attachment icon for performance
+            entryDiv.className = 'glass-card p-4 rounded-lg flex justify-between items-start gap-4';
+            let mediaIcon = '';
+            if (entry.media && entry.media.length > 0) {
+                if (entry.media.some(m => m.type === 'image')) mediaIcon += '🖼️';
+                if (entry.media.some(m => m.type === 'audio')) mediaIcon += '🎵';
+                if (entry.media.some(m => m.type === 'video')) mediaIcon += '�';
             }
             entryDiv.innerHTML = `
                 <div class="flex-grow overflow-hidden">
                     <p class="font-serif text-lg font-semibold text-white truncate">${entry.title || 'Untitled Entry'}</p>
                     <p class="text-gray-400 text-sm mt-1">${new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
-                    <p class="text-gray-300 mt-2 text-sm truncate font-serif">${entry.text || 'Media entry'}</p>
-                    ${mediaIcons ? `<div class="text-lg mt-2">${mediaIcons}</div>` : ''}
+                    <p class="text-gray-300 mt-2 truncate font-serif">${entry.text || 'Media entry'}</p>
+                    <div class="text-lg mt-2">${mediaIcon}</div>
                 </div>
                 <div class="flex flex-col gap-2 flex-shrink-0">
-                    <button class="edit-btn p-2 rounded-full hover:bg-gray-700 transition-colors" data-id="${entry.id}" title="Edit"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button>
-                    <button class="delete-btn p-2 rounded-full hover:bg-gray-700 text-red-500 transition-colors" data-id="${entry.id}" title="Delete"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <button class="edit-btn p-2 rounded-full hover:bg-gray-700" data-id="${entry.id}"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 13V4.207L14.793 14H6a1 1 0 01-1-1z"></path></svg></button>
+                    <button class="delete-btn p-2 rounded-full hover:bg-gray-700 text-red-500" data-id="${entry.id}"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
                 </div>
             `;
             return entryDiv;
         }
-        
-        // UPDATED: Handles both new entries and fetching full data for existing ones
-        function openEntryEditor(lightEntry = null) {
-            if (lightEntry) {
-                // Editing an existing entry, fetch full data
-                showLoader(true);
-                google.script.run
-                    .withSuccessHandler(fullEntry => {
-                        if (fullEntry) {
-                            resetEntryForm();
-                            entryIdInput.value = fullEntry.id;
-                            titleInput.value = fullEntry.title;
-                            textInput.value = fullEntry.text;
-                            tempMedia = fullEntry.media ? [...fullEntry.media] : [];
-                            editorTitle.textContent = 'Edit Entry';
-                            updateMediaPreview();
-                            entryEditorOverlay.classList.add('visible');
-                        } else {
-                            showNotification('Could not find the full entry data.', 'error');
-                        }
-                        showLoader(false);
-                    })
-                    .withFailureHandler(err => {
-                        showNotification('Error loading entry: ' + err, 'error');
-                        showLoader(false);
-                    })
-                    .getEntryById(lightEntry.id);
-            } else {
-                // Creating a new entry
-                resetEntryForm();
-                editorTitle.textContent = 'New Entry';
-                entryEditorOverlay.classList.add('visible');
-            }
-        }
 
-        function closeEntryEditor() {
-            entryEditorOverlay.classList.remove('visible');
+        function loadEntryForEditing(id) {
+            const entry = allEntriesCache.find(e => e.id === id);
+            if (entry) {
+                resetEntryForm();
+                entryIdInput.value = entry.id;
+                titleInput.value = entry.title;
+                textInput.value = entry.text;
+                tempMedia = entry.media ? [...entry.media] : [];
+                updateMediaPreview();
+                titleInput.scrollIntoView({ behavior: 'smooth' });
+            }
         }
 
         function resetEntryForm() {
@@ -404,73 +255,79 @@
             const text = textInput.value.trim();
             if (!title && !text && tempMedia.length === 0) { showNotification("Entry cannot be empty.", "error"); return; }
             
-            showLoader(true);
             const entryData = { title, text, media: tempMedia };
             if(entryIdInput.value) {
-                entryData.id = entryIdInput.value;
+                entryData.id = parseInt(entryIdInput.value);
+                entryData.timestamp = allEntriesCache.find(e => e.id === entryData.id).timestamp;
+            } else {
+                entryData.timestamp = new Date().toISOString();
             }
             
-            google.script.run
-                .withSuccessHandler(response => {
-                    showNotification(response, 'success');
-                    closeEntryEditor();
-                    refreshDataAndUI();
-                })
-                .withFailureHandler(err => {
-                    showNotification('Error saving: ' + err, 'error');
-                    showLoader(false);
-                })
-                .saveEntry(entryData);
+            try {
+                await saveEntry(entryData);
+                showNotification("Entry saved successfully!", "success");
+                resetEntryForm();
+                await refreshDataAndUI();
+            } catch (error) {
+                showNotification("Failed to save entry.", "error");
+            }
         }
-
+        
         // --- EVENT LISTENERS ---
-        document.addEventListener('DOMContentLoaded', () => {
-            setGreeting();
-            createNavButtons();
-            updateFabIcon();
-            refreshDataAndUI();
-        });
+        document.addEventListener('DOMContentLoaded', async () => {
+            setTimeout(() => {
+                splashScreen.style.opacity = '0';
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    mainContent.style.opacity = '1';
+                }, 700);
+            }, 1500);
 
-        document.getElementById('close-editor-btn').addEventListener('click', closeEntryEditor);
+            try {
+                await initDB();
+                await refreshDataAndUI();
+            } catch (error) {
+                showNotification("Failed to load database.", "error");
+            }
+        });
         saveBtn.addEventListener('click', handleSave);
         imageUpload.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'image'));
         audioUpload.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'audio'));
         videoUpload.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'video'));
         
         fabMain.addEventListener('click', () => {
-            if (recordingType) {
-                stopRecording();
-            } else {
-                openEntryEditor(); // Opens a new, blank entry
+            if (recordingType) { stopRecording(); }
+            else { 
+                resetEntryForm(); 
+                titleInput.scrollIntoView({ behavior: 'smooth' });
+                titleInput.focus();
             }
         });
 
         document.getElementById('image-btn').addEventListener('click', () => imageUpload.click());
         document.getElementById('audio-btn').addEventListener('click', async () => { const choice = await showChoiceModal('Audio Action', 'Record', 'Upload'); if (choice === 'record') startRecording('audio'); if (choice === 'upload') audioUpload.click(); });
         document.getElementById('video-btn').addEventListener('click', async () => { const choice = await showChoiceModal('Video Action', 'Record', 'Upload'); if (choice === 'record') startRecording('video'); if (choice === 'upload') videoUpload.click(); });
-        
+
         document.getElementById('prev-month-btn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
         document.getElementById('next-month-btn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
 
         journalEntriesCalendarContainer.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-btn');
             const deleteBtn = e.target.closest('.delete-btn');
-            if (editBtn) {
-                const lightEntry = allEntriesCache.find(en => en.id === editBtn.dataset.id);
-                if (lightEntry) openEntryEditor(lightEntry);
-            }
+            if (editBtn) { loadEntryForEditing(parseInt(editBtn.dataset.id)); }
             if (deleteBtn) { 
                 if(confirm('Are you sure you want to delete this entry?')) {
-                    showLoader(true);
-                    google.script.run
-                        .withSuccessHandler(() => refreshDataAndUI())
-                        .deleteEntry(deleteBtn.dataset.id);
+                    deleteEntry(parseInt(deleteBtn.dataset.id)).then(refreshDataAndUI);
                 }
             }
         });
         
+        imageViewerModal.addEventListener('click', () => {
+            imageViewerModal.classList.remove('visible');
+        });
+
         // --- UTILITY/HELPER FUNCTIONS ---
-        function showNotification(message, type = 'success') { notification.textContent = message; notification.className = 'show'; if (type === 'error') notification.classList.add('error'); setTimeout(() => { notification.classList.remove('show'); notification.classList.remove('error'); }, 4000); }
+        function showNotification(message, type = 'success') { notification.textContent = message; notification.className = 'show'; if (type === 'error') notification.classList.add('error'); setTimeout(() => notification.classList.remove('show'), 5000); }
         
         function handleFileUpload(file, type) {
             if (!file) return;
@@ -487,18 +344,16 @@
             tempMedia.forEach((media, index) => {
                 const url = media.data;
                 const wrapper = document.createElement('div');
-                wrapper.className = 'relative group fade-in';
+                wrapper.className = 'relative';
                 let mediaElement;
-                if (media.type === 'image') mediaElement = `<img src="${url}" class="rounded-lg w-full h-auto object-cover aspect-square">`;
-                if (media.type === 'audio') mediaElement = `<div class="p-4 bg-gray-800 rounded-lg"><audio controls src="${url}" class="w-full"></audio></div>`;
-                if (media.type === 'video') mediaElement = `<video controls src="${url}" class="rounded-lg w-full h-auto"></video>`;
-                
-                wrapper.innerHTML = `
-                    ${mediaElement}
-                    <button onclick="removeMedia(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 leading-none w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                `;
+                if (media.type === 'image') {
+                    mediaElement = `<img src="${url}" class="rounded-lg w-full h-auto object-cover cursor-pointer" onclick="viewImage('${url}')">`;
+                } else if (media.type === 'audio') {
+                    mediaElement = `<audio controls src="${url}" class="w-full"></audio>`;
+                } else if (media.type === 'video') {
+                    mediaElement = `<video controls src="${url}" class="rounded-lg w-full h-auto"></video>`;
+                }
+                wrapper.innerHTML = `${mediaElement}<button onclick="removeMedia(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 leading-none w-6 h-6 flex items-center justify-center text-xs">X</button>`;
                 mediaPreviewContainer.appendChild(wrapper);
             });
         };
@@ -506,36 +361,33 @@
             tempMedia.splice(index, 1);
             updateMediaPreview();
         };
+
+        window.viewImage = function(src) {
+            viewerImg.src = src;
+            imageViewerModal.classList.add('visible');
+        }
         
         function showChoiceModal(title, option1, option2) { 
+            const modal = document.getElementById('choice-modal'); 
             document.getElementById('choice-modal-title').textContent = title;
-            choiceModal.classList.add('visible');
-            return new Promise(resolve => {
-                const btn1 = document.getElementById('choice-modal-option1');
-                const btn2 = document.getElementById('choice-modal-option2');
-                const listener1 = () => { choiceModal.classList.remove('visible'); resolve('record'); cleanup(); }; 
-                const listener2 = () => { choiceModal.classList.remove('visible'); resolve('upload'); cleanup(); };
-                function cleanup() {
-                    btn1.removeEventListener('click', listener1);
-                    btn2.removeEventListener('click', listener2);
-                }
-                btn1.addEventListener('click', listener1, { once: true }); 
-                btn2.addEventListener('click', listener2, { once: true }); 
+            modal.classList.add('visible'); 
+            return new Promise(resolve => { 
+                const listener1 = () => { modal.classList.remove('visible'); resolve('record'); }; 
+                const listener2 = () => { modal.classList.remove('visible'); resolve('upload'); }; 
+                document.getElementById('choice-modal-option1').addEventListener('click', listener1, { once: true }); 
+                document.getElementById('choice-modal-option2').addEventListener('click', listener2, { once: true }); 
             }); 
         };
         
-        // --- MEDIA RECORDING ---
         async function startRecording(type, deviceId = null) { 
             if (type === 'video' && !deviceId) {
-                try {
-                    const cameras = await getCameraDevices();
-                    if (cameras.length > 1) {
-                        const selectedId = await showCameraSelection(cameras);
-                        if (selectedId) startRecording('video', selectedId);
-                        return;
+                const cameras = await getCameraDevices();
+                if (cameras.length > 1) {
+                    const selectedId = await showCameraSelection(cameras);
+                    if (selectedId) {
+                        startRecording('video', selectedId);
                     }
-                } catch (err) {
-                    console.error("Camera enumeration failed:", err);
+                    return;
                 }
             }
 
@@ -550,14 +402,15 @@
                     cameraPreviewModal.classList.add('visible'); 
                     document.getElementById('camera-preview-video').srcObject = mediaStream; 
                 } 
-                const options = { mimeType: type === 'video' ? 'video/webm;codecs=vp8,opus' : 'audio/webm;codecs=opus' }; 
+                const options = { mimeType: type === 'video' ? 'video/webm' : 'audio/webm' }; 
                 mediaRecorder = new MediaRecorder(mediaStream, options); 
                 let chunks = []; 
                 mediaRecorder.ondataavailable = e => chunks.push(e.data); 
                 mediaRecorder.onstop = () => { 
                     const reader = new FileReader();
                     reader.onload = () => {
-                        tempMedia.push({ type: type, data: reader.result });
+                        const base64String = reader.result;
+                        tempMedia.push({ type: type, data: base64String });
                         updateMediaPreview(); 
                     };
                     reader.readAsDataURL(new Blob(chunks, { type: options.mimeType }));
@@ -565,21 +418,18 @@
                     mediaStream.getTracks().forEach(track => track.stop()); 
                     cameraPreviewModal.classList.remove('visible'); 
                     recordingType = null; 
-                    updateFabIcon();
+                    fabMain.classList.remove('is-recording'); 
+                    fabMain.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>`; 
                 }; 
                 mediaRecorder.start(); 
-                updateFabIcon();
-                showNotification(`Recording ${type}...`, 'success');
+                fabMain.classList.add('is-recording'); 
+                fabMain.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 5a1 1 0 011-1h8a1 1 0 011 1v8a1 1 0 01-1 1H6a1 1 0 01-1-1V5z" clip-rule="evenodd" /></svg>`; 
             } catch (err) { 
-                showNotification(`Permission for ${type} was denied. Check browser settings.`, 'error'); 
-                console.error(err);
+                showNotification(`Permission for ${type} was denied.`, 'error'); 
             } 
         };
         
         async function getCameraDevices() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-                throw new Error("enumerateDevices() not supported.");
-            }
             const devices = await navigator.mediaDevices.enumerateDevices();
             return devices.filter(device => device.kind === 'videoinput');
         }
@@ -606,3 +456,4 @@
     </script>
 </body>
 </html>
+�
