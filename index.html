@@ -59,6 +59,17 @@
             border-radius: 50%;
         }
         .sketch-btn:hover { background-color: rgba(160, 130, 90, 0.1); color: #3a2a1a; }
+        .action-btn {
+            font-family: 'Kalam', cursive;
+            background-color: #a0825f;
+            border: none;
+            color: #fdf6e3;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .action-btn:hover { background-color: #856a4d; }
         #save-btn {
             font-family: 'Kalam', cursive;
             background-color: #856a4d;
@@ -90,12 +101,15 @@
         .todo-item input:checked + label::before { content: '☑'; }
         .todo-item input:checked + label span { text-decoration: line-through; opacity: 0.6; }
 
-        .flashback-link { color: #856a4d; text-decoration: underline; cursor: pointer; font-weight: bold; }
-        .flashback-link:hover { color: #6a523a; }
-
-        .mood-selector button { transition: transform 0.2s; }
-        .mood-selector button.selected { transform: scale(1.2); background-color: rgba(160, 130, 90, 0.2); border-radius: 50%; }
-        .tag { background-color: rgba(160, 130, 90, 0.2); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; }
+        .flashback-link {
+            color: #856a4d;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .flashback-link:hover {
+            color: #6a523a;
+        }
     </style>
 </head>
 <body>
@@ -112,13 +126,6 @@
         </header>
 
         <main class="flex flex-col gap-8">
-            <!-- Search Section -->
-            <section id="search-section">
-                <div class="page-card p-4 rounded-md">
-                    <input type="text" id="search-input" class="w-full bg-transparent text-lg text-[#4a3f35] outline-none font-script" placeholder="Search entries by title, content, or #tag...">
-                </div>
-            </section>
-
             <!-- Calendar Section -->
             <section id="calendar-section">
                 <div class="page-card p-4 md:p-6 rounded-md">
@@ -134,6 +141,18 @@
                 </div>
                 <div id="journal-entries-calendar" class="mt-8 space-y-6"></div>
             </section>
+            
+            <!-- Sync Section -->
+            <section id="sync-section">
+                <div class="page-card p-4 md:p-6 rounded-md">
+                    <h2 class="font-script text-2xl text-[#5a4a3a] mb-2">Settings & Sync</h2>
+                    <p class="text-sm text-[#856a4d] mb-4">Manually export your journal to a file, or import a file to replace your current journal.</p>
+                    <div class="flex gap-4">
+                        <button id="export-btn" class="action-btn">Export Journal</button>
+                        <button id="import-btn" class="action-btn">Import Journal</button>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
     
@@ -143,6 +162,7 @@
     </div>
     
     <input type="hidden" id="entry-id-input">
+    <input type="file" id="import-file-input" class="hidden" accept=".json">
     <input type="file" id="image-upload" class="hidden" accept="image/*">
     <input type="file" id="audio-upload" class="hidden" accept="audio/*">
     <input type="file" id="video-upload" class="hidden" accept="video/*">
@@ -156,20 +176,6 @@
             <textarea id="text-input" class="w-full p-2 bg-transparent text-[#4a3f35] rounded-lg focus:ring-0 focus:outline-none" rows="8" placeholder="Write your thoughts..."></textarea>
             <div id="media-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
             
-            <!-- Mood & Tags Section -->
-            <div class="mt-6 pt-4 border-t border-[#dcd1b8]">
-                <h3 class="font-script text-2xl text-[#5a4a3a] mb-2">Mood & Tags</h3>
-                <div class="flex items-center gap-4 mb-2 mood-selector">
-                    <button data-mood="😊" title="Happy">😊</button>
-                    <button data-mood="🤔" title="Thinking">🤔</button>
-                    <button data-mood="😢" title="Sad">😢</button>
-                    <button data-mood="🎉" title="Celebrate">🎉</button>
-                    <button data-mood="😠" title="Angry">😠</button>
-                </div>
-                <input type="text" id="tags-input" class="w-full bg-transparent border-b-2 border-[#dcd1b8] focus:outline-none focus:border-[#a0825f]" placeholder="Tags, separated by commas...">
-            </div>
-
-            <!-- To-Do List Section -->
             <div class="mt-6 pt-4 border-t border-[#dcd1b8]">
                 <h3 class="font-script text-2xl text-[#5a4a3a] mb-2">To-Do List</h3>
                 <div id="todo-list" class="space-y-2"></div>
@@ -208,7 +214,6 @@
         let db;
         let tempMedia = []; // Array of {type, data}
         let tempTodos = []; // Array of {text, completed}
-        let tempMood = '';
         let currentDate = new Date();
         let allEntriesCache = [];
         let mediaRecorder;
@@ -247,42 +252,31 @@
         const viewerImg = document.getElementById('viewer-img');
         const flashbackModal = document.getElementById('flashback-modal');
         const flashbackOptionsContainer = document.getElementById('flashback-options');
-        const searchInput = document.getElementById('search-input');
-        const moodSelector = document.querySelector('.mood-selector');
-        const tagsInput = document.getElementById('tags-input');
+        const exportBtn = document.getElementById('export-btn');
+        const importBtn = document.getElementById('import-btn');
+        const importFileInput = document.getElementById('import-file-input');
 
         // --- DATABASE (IndexedDB) ---
         function initDB() { return new Promise((resolve, reject) => { const request = indexedDB.open(dbName, 1); request.onerror = (e) => reject("DB Error"); request.onupgradeneeded = (e) => { if (!e.target.result.objectStoreNames.contains('entries')) { e.target.result.createObjectStore('entries', { keyPath: 'id', autoIncrement: true }); } }; request.onsuccess = (e) => { db = e.target.result; resolve(db); }; }); }
         function saveEntry(entry) { return new Promise((resolve, reject) => { const tx = db.transaction(['entries'], 'readwrite'); const store = tx.objectStore('entries'); const request = entry.id ? store.put(entry) : store.add(entry); request.onsuccess = (e) => resolve(e.target.result); request.onerror = (e) => reject(e.target.error); }); }
         function getAllEntries() { return new Promise((resolve, reject) => { db.transaction(['entries'], 'readonly').objectStore('entries').getAll().onsuccess = (e) => resolve(e.target.result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))); }); }
         function deleteEntry(id) { return new Promise((resolve, reject) => { db.transaction(['entries'], 'readwrite').objectStore('entries').delete(id).onsuccess = () => resolve(); }); }
+        function clearAllEntries() { return new Promise((resolve, reject) => { const tx = db.transaction(['entries'], 'readwrite'); const store = tx.objectStore('entries'); const request = store.clear(); request.onsuccess = () => resolve(); request.onerror = (e) => reject(e.target.error); }); }
 
         // --- CORE APP LOGIC & DATA HANDLING ---
-        async function refreshDataAndUI(searchTerm = '') {
-            if (allEntriesCache.length === 0) {
-                allEntriesCache = await getAllEntries();
-            }
-            
-            const filteredEntries = allEntriesCache.filter(entry => {
-                const term = searchTerm.toLowerCase();
-                const titleMatch = entry.title && entry.title.toLowerCase().includes(term);
-                const textMatch = entry.text && entry.text.toLowerCase().includes(term);
-                const tagMatch = entry.tags && entry.tags.some(tag => tag.toLowerCase().includes(term));
-                return titleMatch || textMatch || tagMatch;
-            });
-
-            generateCalendar(currentDate.getFullYear(), currentDate.getMonth(), filteredEntries);
-            
+        async function refreshDataAndUI() {
+            allEntriesCache = await getAllEntries();
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
             const selectedDay = document.querySelector('.calendar-day.selected');
-            if (selectedDay) {
-                renderEntriesForDate(new Date(selectedDay.dataset.date), journalEntriesCalendarContainer, filteredEntries);
+            if(selectedDay) {
+                renderEntriesForDate(new Date(selectedDay.dataset.date), journalEntriesCalendarContainer);
             } else {
-                renderEntriesForDate(null, journalEntriesCalendarContainer, filteredEntries);
+                journalEntriesCalendarContainer.innerHTML = '<p class="text-center text-[#856a4d]">Select a date on the calendar to see entries.</p>';
             }
         }
 
         // --- CALENDAR ---
-        function generateCalendar(year, month, entriesToDisplay) {
+        function generateCalendar(year, month) {
             calendarGrid.innerHTML = '';
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -296,24 +290,21 @@
                 const thisDate = new Date(year, month, day);
                 dayEl.dataset.date = thisDate.toISOString().split('T')[0];
                 if (thisDate.toDateString() === today.toDateString()) { dayEl.classList.add('today'); }
-                if(entriesToDisplay.some(e => new Date(e.timestamp).toDateString() === thisDate.toDateString())) { dayEl.classList.add('has-entry'); }
+                if(allEntriesCache.some(e => new Date(e.timestamp).toDateString() === thisDate.toDateString())) { dayEl.classList.add('has-entry'); }
                 dayEl.addEventListener('click', () => {
                     document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
                     dayEl.classList.add('selected');
-                    renderEntriesForDate(thisDate, journalEntriesCalendarContainer, entriesToDisplay);
+                    renderEntriesForDate(thisDate, journalEntriesCalendarContainer);
                 });
                 calendarGrid.appendChild(dayEl);
             }
         }
         
-        function renderEntriesForDate(date, container, entriesToDisplay) {
+        function renderEntriesForDate(date, container) {
             container.innerHTML = '';
-            const entries = date 
-                ? entriesToDisplay.filter(e => new Date(e.timestamp).toDateString() === date.toDateString())
-                : entriesToDisplay;
-
+            const entries = allEntriesCache.filter(e => new Date(e.timestamp).toDateString() === date.toDateString());
             if (entries.length === 0) {
-                container.innerHTML = `<p class="text-center text-[#856a4d]">No entries found.</p>`;
+                container.innerHTML = `<p class="text-center text-[#856a4d]">No entries for this date.</p>`;
             } else {
                 entries.forEach(entry => container.appendChild(createEntryCard(entry)));
             }
@@ -324,23 +315,14 @@
             const entryDiv = document.createElement('div');
             entryDiv.className = 'page-card p-4 rounded-md flex justify-between items-start gap-4 cursor-pointer';
             entryDiv.dataset.id = entry.id;
-            
-            let iconsHTML = '';
-            if (entry.mood) {
-                iconsHTML += `<span class="text-xl">${entry.mood}</span>`;
-            }
+            let mediaIcon = '';
             if (entry.media && entry.media.length > 0) {
-                if (entry.media.some(m => m.type === 'image')) iconsHTML += '🖼️';
-                if (entry.media.some(m => m.type === 'audio')) iconsHTML += '🎵';
-                if (entry.media.some(m => m.type === 'video')) iconsHTML += '🎬';
+                if (entry.media.some(m => m.type === 'image')) mediaIcon += '🖼️';
+                if (entry.media.some(m => m.type === 'audio')) mediaIcon += '🎵';
+                if (entry.media.some(m => m.type === 'video')) mediaIcon += '🎬';
             }
             if (entry.todos && entry.todos.length > 0) {
-                iconsHTML += ' ✓';
-            }
-
-            let tagsHTML = '';
-            if (entry.tags && entry.tags.length > 0) {
-                tagsHTML = `<div class="flex flex-wrap gap-1 mt-2">${entry.tags.map(tag => `<span class="tag text-xs">${tag}</span>`).join('')}</div>`;
+                mediaIcon += ' ✓';
             }
             
             const entryTextDiv = document.createElement('div');
@@ -349,13 +331,10 @@
 
             entryDiv.innerHTML = `
                 <div class="flex-grow overflow-hidden">
-                    <div class="flex items-center gap-2">
-                        <p class="font-script text-xl font-semibold text-[#5a4a3a] truncate">${entry.title || 'Untitled Entry'}</p>
-                        ${iconsHTML}
-                    </div>
-                    <p class="text-[#856a4d] text-sm">${new Date(entry.timestamp).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                    <div class="entry-text-container mt-2"></div>
-                    ${tagsHTML}
+                    <p class="font-script text-xl font-semibold text-[#5a4a3a] truncate">${entry.title || 'Untitled Entry'}</p>
+                    <p class="text-[#856a4d] text-sm mt-1">${new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                    <div class="entry-text-container"></div>
+                    <div class="text-lg mt-2">${mediaIcon}</div>
                 </div>
                 <div class="flex flex-col gap-2 flex-shrink-0">
                     <button class="delete-btn p-2 rounded-full hover:bg-[#eaddc7] text-red-700" data-id="${entry.id}"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
@@ -375,11 +354,8 @@
                     textInput.value = entry.text;
                     tempMedia = entry.media ? [...entry.media] : [];
                     tempTodos = entry.todos ? [...entry.todos] : [];
-                    tempMood = entry.mood || '';
-                    tagsInput.value = entry.tags ? entry.tags.join(', ') : '';
                     updateMediaPreview();
                     renderTodos();
-                    updateMoodSelector();
                 }
             }
             entryModal.classList.add('visible');
@@ -393,23 +369,18 @@
             entryIdInput.value = '';
             titleInput.value = '';
             textInput.value = '';
-            tagsInput.value = '';
             tempMedia = [];
             tempTodos = [];
-            tempMood = '';
             updateMediaPreview();
             renderTodos();
-            updateMoodSelector();
         }
         
         async function handleSave() {
             const title = titleInput.value.trim();
             const text = textInput.value.trim();
-            const tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-
             if (!title && !text && tempMedia.length === 0 && tempTodos.length === 0) { showNotification("Entry cannot be empty.", "error"); return; }
             
-            const entryData = { title, text, media: tempMedia, todos: tempTodos, mood: tempMood, tags: tags };
+            const entryData = { title, text, media: tempMedia, todos: tempTodos };
             if(entryIdInput.value) {
                 entryData.id = parseInt(entryIdInput.value);
                 entryData.timestamp = allEntriesCache.find(e => e.id === entryData.id).timestamp;
@@ -510,6 +481,52 @@
             printWindow.print();
         }
 
+        // --- SYNC ---
+        async function handleExport() {
+            const entries = await getAllEntries();
+            const dataStr = JSON.stringify(entries);
+            const dataBlob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `codex_backup_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showNotification("Journal exported successfully!", "success");
+        }
+
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!confirm("Are you sure? Importing will overwrite all current journal entries.")) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const importedEntries = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedEntries)) {
+                        throw new Error("Invalid file format.");
+                    }
+                    await clearAllEntries();
+                    for (const entry of importedEntries) {
+                        // The old ID from another device might conflict, so we remove it
+                        // and let IndexedDB assign a new one.
+                        delete entry.id; 
+                        await saveEntry(entry);
+                    }
+                    await refreshDataAndUI();
+                    showNotification("Journal imported successfully!", "success");
+                } catch (err) {
+                    showNotification("Error importing file: " + err.message, "error");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset file input
+        }
+
 
         // --- EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', async () => {
@@ -541,6 +558,9 @@
         imageUpload.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'image'));
         audioUpload.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'audio'));
         videoUpload.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'video'));
+        exportBtn.addEventListener('click', handleExport);
+        importBtn.addEventListener('click', () => importFileInput.click());
+        importFileInput.addEventListener('change', handleImport);
         
         fabMain.addEventListener('click', () => {
             if (recordingType) { stopRecording(); }
@@ -554,19 +574,18 @@
         document.getElementById('video-btn').addEventListener('click', async () => { const choice = await showChoiceModal('Video Action', 'Record', 'Upload'); if (choice === 'record') startRecording('video'); if (choice === 'upload') videoUpload.click(); });
         linkBtn.addEventListener('click', showFlashbackSelection);
 
-        document.getElementById('prev-month-btn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); refreshDataAndUI(searchInput.value); });
-        document.getElementById('next-month-btn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); refreshDataAndUI(searchInput.value); });
-        searchInput.addEventListener('input', (e) => refreshDataAndUI(e.target.value));
+        document.getElementById('prev-month-btn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); refreshDataAndUI(); });
+        document.getElementById('next-month-btn').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); refreshDataAndUI(); });
 
         journalEntriesCalendarContainer.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.delete-btn');
-            const card = e.target.closest('.page-card');
             const flashbackLink = e.target.closest('.flashback-link');
+            const card = e.target.closest('.page-card');
 
             if (deleteBtn) {
                 e.stopPropagation(); 
                 if(confirm('Are you sure you want to delete this entry?')) {
-                    deleteEntry(parseInt(deleteBtn.dataset.id)).then(() => refreshDataAndUI(searchInput.value));
+                    deleteEntry(parseInt(deleteBtn.dataset.id)).then(refreshDataAndUI);
                 }
             } else if (flashbackLink) {
                 e.stopPropagation();
@@ -575,7 +594,7 @@
                 if (entry) {
                     const entryDate = new Date(entry.timestamp);
                     currentDate = entryDate;
-                    refreshDataAndUI(searchInput.value).then(() => {
+                    refreshDataAndUI().then(() => {
                         const dayEl = document.querySelector(`.calendar-day[data-date='${entryDate.toISOString().split('T')[0]}']`);
                         if (dayEl) {
                             dayEl.click();
@@ -601,21 +620,8 @@
         imageViewerModal.addEventListener('click', () => {
             imageViewerModal.classList.remove('visible');
         });
-        
-        moodSelector.addEventListener('click', (e) => {
-            const button = e.target.closest('button');
-            if (button) {
-                tempMood = button.dataset.mood;
-                updateMoodSelector();
-            }
-        });
 
         // --- UTILITY/HELPER FUNCTIONS ---
-        function updateMoodSelector() {
-            moodSelector.querySelectorAll('button').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.mood === tempMood);
-            });
-        }
         function showNotification(message, type = 'success') { notification.textContent = message; notification.className = 'show'; if (type === 'error') notification.classList.add('error'); setTimeout(() => notification.classList.remove('show'), 5000); }
         
         function handleFileUpload(file, type) {
