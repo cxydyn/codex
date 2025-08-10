@@ -503,18 +503,15 @@
 
         journalEntriesCalendarContainer.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.delete-btn');
-            const card = e.target.closest('.page-card');
             const flashbackLink = e.target.closest('.flashback-link');
+            const card = e.target.closest('.page-card');
 
             if (deleteBtn) {
                 e.stopPropagation(); 
                 if(confirm('Are you sure you want to delete this entry?')) {
                     deleteEntry(parseInt(deleteBtn.dataset.id)).then(refreshDataAndUI);
                 }
-                return;
-            }
-
-            if (flashbackLink) {
+            } else if (flashbackLink) {
                 e.stopPropagation();
                 const entryId = parseInt(flashbackLink.dataset.id);
                 const entry = allEntriesCache.find(e => e.id === entryId);
@@ -539,11 +536,8 @@
                         }
                     });
                 }
-                return;
-            }
-
-            if (card && card.dataset.id) {
-                loadEntryForEditing(parseInt(card.dataset.id));
+            } else if (card) {
+                openEntryModal(parseInt(card.dataset.id));
             }
         });
         
